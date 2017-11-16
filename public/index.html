@@ -1,0 +1,98 @@
+<!doctype HTML>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>NaviTrail</title>
+        
+        <script src="js/libs/firebase-4.5.0.js"></script>
+        <script src="js/libs/firebase-firestore-4.5.0.js"></script>
+        <!--<script src="js/connectuser.js"></script>-->
+        <script src="js/libs/vue.min.js"></script>
+        <script src="https://use.fontawesome.com/60406474de.js"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDw9qJCFkj7WJDFrUEhJPb0xdKdTTkZqsM"></script>
+        <script src="js/components.js"></script>
+        
+        <style>
+            body {background-color: seagreen; color: white; font-family: 'Arial'; margin: 0;}
+            
+            .block {padding: 0 10px;}
+            .welcome {text-align: center;}
+            
+            header {padding-top: 20px;}
+            header a {align-items: center; color: white; display: flex; justify-content: center; text-decoration: none;}
+            header img {display: block; height: 50px;}
+            
+            h1 {display: block; margin: 0 10px;}
+            h2 {text-align: center;}
+            
+            /* button styles */
+            .button {border: 2px solid white; color: white; display: block; margin-bottom: 10px; padding: 10px; text-align: center; text-decoration: none; width: calc(100% - 24px);}
+            .button:hover {border: 2px solid #bbb; text-decoration: underline;}
+            .button h3, .button p {margin: 0;}
+            
+            ul {list-style-type: none; padding: 0;}
+            
+            .map {height: 300px; margin-bottom: 10px;}
+            
+            /* trail detail */
+            .start-location {margin-bottom: 0;}
+            
+        </style>
+
+    </head>
+    <body>
+        <div id="app">
+            <header>
+                <a href="welcome" v-on:click="changePage($event, 'welcome')">
+                    <img src="assets/logo.png" alt=""/>
+                    <h1>NaviTrail</h1>
+                </a>
+            </header>
+            <div v-if="page.level1 === 'welcome'" class="block welcome">
+                <h2>Go on an adventure</h2>
+                <p>Scroll down to find out more...</p>
+                <a class="button" href="signup" v-on:click="changePage($event, 'signup')">Sign-up</a>
+                <a class="button" href="signin" v-on:click="changePage($event, 'signin')">Log-in</a>
+                <a class="button" href="trails" v-on:click="changePage($event, 'trails')">View Trails</a>
+            </div>
+            <template v-if="page.level1 === 'signup'">
+                <form v-on:submit.prevent="signUp">
+                    <button type="submit"/>
+                </form>
+            </template>
+            <template v-if="page.level1 === 'signin'">
+
+            </template>
+            <div class="block" v-if="page.level1 === 'trails' && page.level2 === ''">
+                <h2>Select a trail:</h2>
+                <ul>
+                    <li v-for="trail in trails">
+                        <a class="button" v-bind:href="'trails/' + trail.id" v-on:click="changePage($event, 'trails', trail.id)">
+                            <h3>{{trail.data().title}}</h3>
+                            <p>{{trail.data().description}}</p>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="block" v-if="page.level1 === 'trails' && page.level2 !== '' && selectedTrail">
+                <h2>{{selectedTrail.data().title}}</h2>
+                <p>{{selectedTrail.data().description}}</p>
+                <p class="start-location">Start Location:</p>
+                <!--<div id="start-location"></div>-->
+                <google-map v-bind:latitude="selectedTrail.data().zones[0].latitude" v-bind:longitude="selectedTrail.data().zones[0].longitude"></google-map>
+                <a class="button" v-on:click="changePage($event, 'play', trail.id)">
+                    <i class="fa fa-location-arrow" aria-hidden="true"></i> Start
+                </a>
+                <a class="button" v-on:click="changePage($event, 'edit', trail.id)">
+                    <i class="fa fa-pencil" aria-hidden="true"></i> Edit
+                </a>
+            </div>
+
+        </div>
+        <script src="js/controller.js"></script>
+        <script src="js/pages.js"></script>
+        <script async defer src="js/data.js"></script>
+    </body>
+</html>
