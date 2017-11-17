@@ -26,10 +26,14 @@
             h1 {display: block; margin: 0 10px;}
             h2 {text-align: center;}
             
-            /* button styles */
-            .button {border: 2px solid white; color: white; display: block; margin-bottom: 10px; padding: 10px; text-align: center; text-decoration: none; width: calc(100% - 24px);}
+            /* form styles */
+            label {display: block;}
+            input, .button {box-sizing: content-box; margin-bottom: 10px;}
+            input {padding: 8px; width: calc(100% - 20px);}
+            .button {background-color: transparent; border: 2px solid white; color: white; display: block; padding: 10px; text-align: center; text-decoration: none; width: calc(100% - 24px);}
             .button:hover {border: 2px solid #bbb; text-decoration: underline;}
             .button h3, .button p {margin: 0;}
+            .error {background-color: red; font-size: 0.8em; font-weight: 100; margin: 5px 0; padding: 5px;}
             
             ul {list-style-type: none; padding: 0;}
             
@@ -52,18 +56,54 @@
             <div v-if="page.level1 === 'welcome'" class="block welcome">
                 <h2>Go on an adventure</h2>
                 <p>Scroll down to find out more...</p>
-                <a class="button" href="signup" v-on:click="changePage($event, 'signup')">Sign-up</a>
-                <a class="button" href="signin" v-on:click="changePage($event, 'signin')">Log-in</a>
+                <a v-if="!user" class="button" href="signup" v-on:click="changePage($event, 'signup')">Sign-up</a>
+                <a v-if="!user" class="button" href="signin" v-on:click="changePage($event, 'signin')">Log-in</a>
                 <a class="button" href="trails" v-on:click="changePage($event, 'trails')">View Trails</a>
+                <a v-if="user" class="button" href="user" v-on:click="changePage($event, 'user')">User Details</a>
             </div>
-            <template v-if="page.level1 === 'signup'">
-                <form v-on:submit.prevent="signUp">
-                    <button type="submit"/>
-                </form>
-            </template>
-            <template v-if="page.level1 === 'signin'">
 
-            </template>
+            <div class="block" v-if="page.level1 === 'signup'">
+                <h2>Sign Up</h2>
+                <form v-on:submit.prevent="signUp">
+                    
+                    <label for="username">Choose a Username:</label>
+                    <h3 class="error" v-if="usernameTaken"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> This username is already taken</h3>
+                    <input type="text" id="username" v-model.lazy.trim="signup.username"/>
+
+                    <label for="email">Please enter your email address:</label>
+                    <h3 class="error" v-if="signup.email !== '' && (signup.email.indexOf('@') === -1 || signup.email.indexOf('.') === -1)"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Please enter a valid email address</h3>
+                    <input type="email" id="email" v-model.lazy.trim="signup.email"/>
+
+                    <label for="password1">Please create a password:</label>
+                    <h3 class="error" v-if="signup.password1 !== '' && signup.password1.length < 6"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Your password must be at least 6 characters</h3>
+                    <input type="password" id="password1" v-model.lazy.trim="signup.password1"/>
+
+                    <label for="password2">Please re-enter the password:</label>
+                    <h3 class="error" v-if="signup.password2 !== '' && signup.password1 !== signup.password2"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> The passwords do not match</h3>
+                    <input type="password" id="password2" v-model.lazy.trim="signup.password2"/>
+
+                    <h3 class="error" v-if="signup.error"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Please fill in all of the fields are filled in correctly before continuing.</h3>
+                    <button type="submit" class="button">Continue</button>
+
+                </form>
+            </div>
+            
+            <div class="block" v-if="page.level1 === 'signin'">
+                <h2>Sign In</h2>
+                <form v-on:submit.prevent="signIn">
+                    
+                    <label for="email">Email address:</label>
+                    <input type="email" id="email" v-model.lazy.trim="signin.email"/>
+                    
+                    <label for="password">Please create a password:</label>
+                    <input type="password" id="password" v-model.lazy.trim="signin.password"/>
+                    
+                    <h3 class="error" v-if="signin.error"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> There was an error signing you in. Please check you email address and password and try again. If you have yet to register please go to the <a href="signup">Sign Up page</a>.</h3>
+                    <button type="submit" class="button">Continue</button>
+                    
+                </form>
+            </div>
+
             <div class="block" v-if="page.level1 === 'trails' && page.level2 === ''">
                 <h2>Select a trail:</h2>
                 <ul>
@@ -80,7 +120,6 @@
                 <h2>{{selectedTrail.data().title}}</h2>
                 <p>{{selectedTrail.data().description}}</p>
                 <p class="start-location">Start Location:</p>
-                <!--<div id="start-location"></div>-->
                 <google-map v-bind:latitude="selectedTrail.data().zones[0].latitude" v-bind:longitude="selectedTrail.data().zones[0].longitude"></google-map>
                 <a class="button" v-on:click="changePage($event, 'play', trail.id)">
                     <i class="fa fa-location-arrow" aria-hidden="true"></i> Start

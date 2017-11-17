@@ -1,6 +1,8 @@
 /*global firebase*/
 /*global vm*/
 /*global dbTrails*/
+/*global dbUsers*/
+/*global changePage*/
 
 var initData = function () {
     
@@ -15,15 +17,41 @@ var initData = function () {
         storageBucket: "geo-adventures.appspot.com",
         messagingSenderId: "308561790550"
     });
+    
+    // Authentication
+    firebase.auth().onAuthStateChanged(function (user) {
+
+        vm.user = user;
+        
+        // if signing-up, add user doc
+        if (user && vm.page.level1 === "signup" && vm.signup.username !== "") {
+            console.log("check 1");
+            dbUsers.doc(user.uid).set({
+                username: vm.signup.username
+            });
+        }
+
+        // move on from sign in/up page if successfully logged in
+        if (user && (vm.page.level1 === "siginin" || vm.page.level1 === "signup")) {
+            changePage("welcome", "", true);
+        }
+
+    });
+
 
     // Enable offline data
     firebase.firestore().enablePersistence().then(function () {
 
         dbTrails = firebase.firestore().collection("trails");
+        dbUsers = firebase.firestore().collection("users");
 
         // realtime db updates
         dbTrails.onSnapshot(function (querySnapshot) {
             vm.trails = querySnapshot.docs;
+        });
+        
+        dbUsers.onSnapshot(function (querySnapshot) {
+            vm.users = querySnapshot.docs;
         });
 
     }).catch(function (err) {
