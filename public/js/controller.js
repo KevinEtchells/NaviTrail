@@ -44,7 +44,9 @@ var vm,
                         }
                     });
                 }
-                return selectedTrail;
+                if (selectedTrail) {
+                    return selectedTrail.data();
+                }
             },
             usernameTaken: function () {
                 var newUsername = this.signup.username,
@@ -80,6 +82,43 @@ var vm,
                 } else {
                     this.signup.error = true;
                 }
+            },
+            updateTrail: function (trail) {
+                dbTrails.doc(this.page.level2).update(trail);
+            },
+            removeZone: function (zoneIndex) {
+                var zones = this.selectedTrail.zones;
+                if (window.confirm("Are you sure you wish to remove this zone?")) {
+                    zones.splice(zoneIndex, 1);
+                    dbTrails.doc(this.page.level2).update({
+                        zones: zones
+                    });
+                }
+            },
+            addZone: function (trail) {
+                
+                // use previous zone location as a starting point
+                var previousZone = {};
+                if (trail.zones.length) {
+                    previousZone = trail.zones[trail.zones.length - 1];
+                }
+                
+                trail.zones.push({
+                    latitude: previousZone.latitude || 0,
+                    longitude: previousZone.longitude || 0
+                });
+
+                dbTrails.doc(this.page.level2).update({
+                    zones: trail.zones
+                });
+            },
+            positionUpdate: function (lat, lng, zoneIndex) {
+                var zones = this.selectedTrail.zones;
+                zones[zoneIndex].latitude = lat;
+                zones[zoneIndex].longitude = lng;
+                dbTrails.doc(this.page.level2).update({
+                    zones: zones
+                });
             }
         }
     });

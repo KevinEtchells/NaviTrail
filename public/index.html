@@ -7,7 +7,6 @@
         
         <script src="js/libs/firebase-4.5.0.js"></script>
         <script src="js/libs/firebase-firestore-4.5.0.js"></script>
-        <!--<script src="js/connectuser.js"></script>-->
         <script src="js/libs/vue.min.js"></script>
         <script src="https://use.fontawesome.com/60406474de.js"></script>
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDw9qJCFkj7WJDFrUEhJPb0xdKdTTkZqsM"></script>
@@ -25,23 +24,32 @@
             
             h1 {display: block; margin: 0 10px;}
             h2 {text-align: center;}
+            h3 {margin-bottom: 0;}
+            h4 {display: inline-block; margin: 0;}
             
             /* form styles */
-            label {display: block;}
+            label {clear: both; display: block;}
             input, .button {box-sizing: content-box; margin-bottom: 10px;}
-            input {padding: 8px; width: calc(100% - 20px);}
+            input, textarea {padding: 8px; width: calc(100% - 20px);}
             .button {background-color: transparent; border: 2px solid white; color: white; display: block; padding: 10px; text-align: center; text-decoration: none; width: calc(100% - 24px);}
             .button:hover {border: 2px solid #bbb; text-decoration: underline;}
             .button h3, .button p {margin: 0;}
             .error {background-color: red; font-size: 0.8em; font-weight: 100; margin: 5px 0; padding: 5px;}
             
-            ul {list-style-type: none; padding: 0;}
+            ul, ol {list-style-type: none; margin: 0; padding: 0;}
             
-            .map {height: 300px; margin-bottom: 10px;}
+            .map {height: 200px; margin-bottom: 10px;}
             
             /* trail detail */
             .start-location {margin-bottom: 0;}
             
+            /* edit trail */
+            .edit-trail h3 {text-align: center;}
+            .zone {border: 1px solid white; margin-bottom: 10px; padding: 5px;}
+            .zone h4 {padding: 5px 0;}
+            .zone .map {height: 200px;}
+            .remove-zone {float: right; padding: 5px; width: auto;}
+
         </style>
 
     </head>
@@ -92,8 +100,8 @@
                 <h2>Sign In</h2>
                 <form v-on:submit.prevent="signIn">
                     
-                    <label for="email">Email address:</label>
-                    <input type="email" id="email" v-model.lazy.trim="signin.email"/>
+                    <label for="email-signin">Email address:</label>
+                    <input type="email" id="email-signin" v-model.lazy.trim="signin.email"/>
                     
                     <label for="password">Please create a password:</label>
                     <input type="password" id="password" v-model.lazy.trim="signin.password"/>
@@ -117,16 +125,41 @@
             </div>
 
             <div class="block" v-if="page.level1 === 'trails' && page.level2 !== '' && selectedTrail">
-                <h2>{{selectedTrail.data().title}}</h2>
-                <p>{{selectedTrail.data().description}}</p>
+                <h2>{{selectedTrail.title}}</h2>
+                <p>{{selectedTrail.description}}</p>
                 <p class="start-location">Start Location:</p>
-                <google-map v-bind:latitude="selectedTrail.data().zones[0].latitude" v-bind:longitude="selectedTrail.data().zones[0].longitude"></google-map>
+                <google-map v-bind:latitude="selectedTrail.zones[0].latitude" v-bind:longitude="selectedTrail.zones[0].longitude"></google-map>
                 <a class="button" v-on:click="changePage($event, 'play', trail.id)">
                     <i class="fa fa-location-arrow" aria-hidden="true"></i> Start
                 </a>
-                <a class="button" v-on:click="changePage($event, 'edit', trail.id)">
+                <a v-if="user && user.uid === selectedTrail.owner" class="button" v-on:click="changePage($event, 'edittrail', page.level2)">
                     <i class="fa fa-pencil" aria-hidden="true"></i> Edit
                 </a>
+            </div>
+            
+            <div class="block edit-trail" v-if="page.level1 === 'edittrail' && selectedTrail && selectedTrail.owner === user.uid">
+                <h2>Edit Trail</h2>
+                <label for="trail-name">Trail Name:</label>
+                <input type="text" id="trail-name" v-model.lazy="selectedTrail.title" v-on:change="updateTrail(selectedTrail)"/>
+                <label for="description">Description:</label>
+                <input type="text" id="description" v-model.lazy="selectedTrail.description" v-on:change="updateTrail(selectedTrail)"/>
+                <h3>Zones</h3>
+                <ol>
+                    <li v-for="zone, zoneIndex in selectedTrail.zones" class="zone">
+                        <h4>Zone {{zoneIndex + 1}}</h4>
+                        <button class="button remove-zone" v-on:click="removeZone(zoneIndex)"><i class="fa fa-trash" aria-hidden="true"></i> Remove Zone</button>
+                        <label for="zone-name">Zone Name:</label>
+                        <input type="text" id="zone-name" v-model="zone.title" v-on:change="updateTrail(selectedTrail)"/>
+                        <label for="latitude">Latitude:</label>
+                        <input type="text" id="latitude" v-model.number="zone.latitude" v-on:change="updateTrail(selectedTrail)"/>
+                        <label for="longitude">Longitude:</label>
+                        <input type="text" id="longitude" v-model.number="zone.longitude" v-on:change="updateTrail(selectedTrail)"/>
+                        <google-map v-bind:latitude="zone.latitude" v-bind:longitude="zone.longitude" v-on:position="positionUpdate" v-bind:zone="zoneIndex"></google-map>
+                        <label for="content">Content:</label>
+                        <textarea id="content" v-model="zone.content" v-on:change="updateTrail(selectedTrail)" rows="3"></textarea>
+                    </li>
+                </ol>
+                <button class="button" v-on:click="addZone(selectedTrail)"><i class="fa fa-plus" aria-hidden="true"></i> Add Zone</button>
             </div>
 
         </div>
