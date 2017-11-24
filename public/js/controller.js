@@ -31,7 +31,14 @@ var vm,
             },
             user: {},
             users: [],
-            trails: []
+            trails: [],
+            currentPosition: {
+                latitude: 0,
+                longitude: 0,
+                nextZone: 0,
+                distance: 0,
+                inZone: false
+            }
         },
         computed: {
             selectedTrail: function () {
@@ -119,6 +126,10 @@ var vm,
                 dbTrails.doc(this.page.level2).update({
                     zones: zones
                 });
+            },
+            nextZone: function () {
+                vm.currentPosition.nextZone = vm.currentPosition.nextZone + 1;
+                vm.currentPosition.inZone = false;
             }
         }
     });

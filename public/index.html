@@ -129,7 +129,7 @@
                 <p>{{selectedTrail.description}}</p>
                 <p class="start-location">Start Location:</p>
                 <google-map v-bind:latitude="selectedTrail.zones[0].latitude" v-bind:longitude="selectedTrail.zones[0].longitude"></google-map>
-                <a class="button" v-on:click="changePage($event, 'play', trail.id)">
+                <a class="button" v-on:click="changePage($event, 'play', page.level2)">
                     <i class="fa fa-location-arrow" aria-hidden="true"></i> Start
                 </a>
                 <a v-if="user && user.uid === selectedTrail.owner" class="button" v-on:click="changePage($event, 'edittrail', page.level2)">
@@ -161,10 +161,32 @@
                 </ol>
                 <button class="button" v-on:click="addZone(selectedTrail)"><i class="fa fa-plus" aria-hidden="true"></i> Add Zone</button>
             </div>
+            
+            <div class="block" v-if="page.level1 === 'play' && selectedTrail">
+                <h2>{{selectedTrail.title}}</h2>
+                <template v-if="currentPosition.inZone">
+                    You are in Zone {{currentPosition.nextZone + 1}}{{selectedTrail.zones[currentPosition.nextZone].title ? ": " + selectedTrail.zones[currentPosition.nextZone].title : ""}}
+                    <p>{{selectedTrail.zones[currentPosition.nextZone].content}}</p>
+                    <template v-if="currentPosition.nextZone + 1 === selectedTrail.zones.length">
+                        <p>Well done! You have completed the trail!</p>
+                    </template>
+                    <template v-else>
+                        <button v-on:click="nextZone">Go to next zone</button>
+                    </template>
+                </template>
+                <template v-else>
+                    <h3>Next Zone:</h3>
+                    <p>Zone {{currentPosition.nextZone + 1}}{{selectedTrail.zones[currentPosition.nextZone].title ? ": " + selectedTrail.zones[currentPosition.nextZone].title : ""}}</p>
+                    <google-map v-bind:latitude="selectedTrail.zones[currentPosition.nextZone].latitude" v-bind:longitude="selectedTrail.zones[currentPosition.nextZone].longitude" v-bind:currentlatitude="currentPosition.latitude" v-bind:currentlongitude="currentPosition.longitude"></google-map>
+                    <label for="distance">Distance:</label>
+                    <input type="text" disabled v-bind:value="Math.round(currentPosition.distance) + ' meters'"/>
+                </template>
+            </div>
 
         </div>
         <script src="../js/controller.js"></script>
         <script src="../js/pages.js"></script>
         <script async defer src="../js/data.js"></script>
+        <script async defer src="../js/gps.js"></script>
     </body>
 </html>
