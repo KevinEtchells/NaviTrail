@@ -22,11 +22,11 @@
             longitude: function (val) {
                 this.marker.setPosition({lat: parseFloat(this.latitude) || 0, lng: parseFloat(this.longitude) || 0});
             },
-            currentLatitude: function (val) {
-                this.currentLocationMarker.setPosition({lat: this.latitude, lng: this.longitude});
+            currentlatitude: function (val) {
+                this.currentLocationMarker.setPosition({lat: this.currentlatitude, lng: this.currentlongitude});
             },
-            currentLongitude: function (val) {
-                this.currentLocationMarker.setPosition({lat: this.latitude, lng: this.longitude});
+            currentlongitude: function (val) {
+                this.currentLocationMarker.setPosition({lat: this.currentlatitude, lng: this.currentlongitude});
             }
         },
         mounted: function () {
@@ -64,7 +64,7 @@
             //}
 
             google.maps.event.addListener(this.map, "click", function (event) {
-                if (window.confirm("Set new position?")) {
+                if (self.zone >= 0 && window.confirm("Set new position?")) {
                     self.$emit("position", event.latLng.lat(), event.latLng.lng(), self.zone);
                 }
             });
