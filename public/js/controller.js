@@ -64,6 +64,19 @@ var vm,
                     }
                 });
                 return taken;
+            },
+            userData: function () {
+                var userData,
+                    userId;
+                if (this.user) {
+                    userId = this.user.uid;
+                    this.users.forEach(function (user) {
+                        if (user.id === userId) {
+                            userData = user.data();
+                        }
+                    });
+                }
+                return userData;
             }
         },
         methods: {
@@ -86,6 +99,7 @@ var vm,
                     firebase.auth().createUserWithEmailAndPassword(this.signup.email, this.signup.password1).catch(function (error) {
                         window.console.log(error);
                     });
+                    // User doc is created within authentication watcher
                 } else {
                     this.signup.error = true;
                 }

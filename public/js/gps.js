@@ -1,4 +1,7 @@
 /*global vm*/
+/*global dbUsers*/
+
+var setPosition; // global, to enable testing
 
 (function () {
     
@@ -29,18 +32,44 @@
 
     }());
     
+    
+    setPosition = function (coords) {
+
+        vm.currentPosition.latitude = coords.latitude;
+        vm.currentPosition.longitude = coords.longitude;
+
+        // check if in next zone
+        if (vm.selectedTrail) {
+            vm.currentPosition.distance = distanceBetweenPoints(coords, vm.selectedTrail.zones[vm.currentPosition.nextZone]);
+            if (vm.currentPosition.distance < TOLERANCE) {
+                vm.currentPosition.inZone = true;
+                
+                // if this is the last zone - add trail to users completed-trails, providing the user is signed-in
+                if (vm.currentPosition.nextZone + 1 === vm.selectedTrail.zones.length && vm.user) {
+                    vm.users.forEach(function (user) {
+                        // TO DO: have a separate currentUser object, rather than having to iterate through all users. We may limit vm.users to just the top scorers and friends in future.
+                        var completedTrails;
+                        if (user.id === vm.user.uid) {
+                            completedTrails = user.data().completedTrails || [];
+                            if (completedTrails.indexOf(vm.page.level2) === -1) {
+                                completedTrails.push(vm.page.level2);
+                            }
+                            dbUsers.doc(vm.user.uid).update({
+                                completedTrails: completedTrails
+                            });
+                        }
+                    });
+                }
+                
+            }
+        }
+        
+    };
+    
 
     // continually update location
     navigator.geolocation.watchPosition(function (position) {
-        window.console.log(position.coords);
-        vm.currentPosition.latitude = position.coords.latitude;
-        vm.currentPosition.longitude = position.coords.longitude;
-        if (vm.selectedTrail) {
-            vm.currentPosition.distance = distanceBetweenPoints(position.coords, vm.selectedTrail.zones[vm.currentPosition.nextZone]);
-            if (vm.currentPosition.distance < TOLERANCE) {
-                vm.currentPosition.inZone = true;
-            }
-        }
+        setPosition(position.coords);
     }, function () {
         window.alert("GPS error - please ensure your GPS is switched on");
     }, {enableHighAccuracy: true});

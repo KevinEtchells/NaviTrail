@@ -129,12 +129,20 @@
                 <p>{{selectedTrail.description}}</p>
                 <p class="start-location">Start Location:</p>
                 <google-map v-bind:latitude="selectedTrail.zones[0].latitude" v-bind:longitude="selectedTrail.zones[0].longitude"></google-map>
-                <a class="button" v-on:click="changePage($event, 'play', page.level2)">
+                <a class="button" v-bind:href="(user ? 'play/' : 'preplay/') + page.level2" v-on:click="changePage($event, user ? 'play' : 'preplay', page.level2)">
                     <i class="fa fa-location-arrow" aria-hidden="true"></i> Start
                 </a>
-                <a v-if="user && user.uid === selectedTrail.owner" class="button" v-on:click="changePage($event, 'edittrail', page.level2)">
+                <a v-if="user && user.uid === selectedTrail.owner" class="button" v-bind:href="'edittrail/' + page.level2" v-on:click="changePage($event, 'edittrail', page.level2)">
                     <i class="fa fa-pencil" aria-hidden="true"></i> Edit
                 </a>
+            </div>
+            
+            <div class="block" v-if="page.level1 === 'preplay'">
+                <p>Please sign-in or create an account in order to keep a record of the trails you complete.</p>
+                <p>You may continue to play as a guest, but your trails will not be recorded.</p>
+                <a class="button" href="signup" v-on:click="changePage($event, 'signup')">Sign-up</a>
+                <a class="button" href="signin" v-on:click="changePage($event, 'signin')">Log-in</a>
+                <a class="button" v-bind:href="'play/' + page.level2" v-on:click="changePage($event, 'play', page.level2)">Play as Guest</a>
             </div>
             
             <div class="block edit-trail" v-if="page.level1 === 'edittrail' && selectedTrail && selectedTrail.owner === user.uid">
@@ -168,7 +176,10 @@
                     You are in Zone {{currentPosition.nextZone + 1}}{{selectedTrail.zones[currentPosition.nextZone].title ? ": " + selectedTrail.zones[currentPosition.nextZone].title : ""}}
                     <p>{{selectedTrail.zones[currentPosition.nextZone].content}}</p>
                     <template v-if="currentPosition.nextZone + 1 === selectedTrail.zones.length">
-                        <p>Well done! You have completed the trail!</p>
+                        <p>Well done: You have completed the trail!</p>
+                        <p v-if="user">You have now completed {{userData.completedTrails ? userData.completedTrails.length + ' trails in total' : ' your first trail'}}.</p>
+                        <p v-else>Please sign-in or create an account to keep a record of future trails.</p>
+                        <a href="welcome" class="button" v-on:click="changePage($event, 'welcome')">Back to Home Page</a>
                     </template>
                     <template v-else>
                         <button v-on:click="nextZone">Go to next zone</button>

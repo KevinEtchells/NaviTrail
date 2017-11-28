@@ -25,14 +25,13 @@ var initData = function () {
         
         // if signing-up, add user doc
         if (user && vm.page.level1 === "signup" && vm.signup.username !== "") {
-            console.log("check 1");
             dbUsers.doc(user.uid).set({
                 username: vm.signup.username
             });
         }
 
         // move on from sign in/up page if successfully logged in
-        if (user && (vm.page.level1 === "siginin" || vm.page.level1 === "signup")) {
+        if (user && (vm.page.level1 === "signin" || vm.page.level1 === "signup")) {
             changePage("welcome", "", true);
         }
 
