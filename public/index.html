@@ -67,6 +67,7 @@
                 <a v-if="!user" class="button" href="signup" v-on:click="changePage($event, 'signup')">Sign-up</a>
                 <a v-if="!user" class="button" href="signin" v-on:click="changePage($event, 'signin')">Log-in</a>
                 <a class="button" href="trails" v-on:click="changePage($event, 'trails')">View Trails</a>
+                <a v-if="user" class="button" href="edit" v-on:click="newTrail($event)">Create a New Trail</a>
                 <a v-if="user" class="button" href="user" v-on:click="changePage($event, 'user')">User Details</a>
             </div>
 
@@ -106,7 +107,7 @@
                     <label for="password">Please create a password:</label>
                     <input type="password" id="password" v-model.lazy.trim="signin.password"/>
                     
-                    <h3 class="error" v-if="signin.error"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> There was an error signing you in. Please check you email address and password and try again. If you have yet to register please go to the <a href="signup">Sign Up page</a>.</h3>
+                    <h3 class="error" v-if="signin.error"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> There was an error signing you in. Please check your email address and password and try again. If you have yet to register please go to the <a href="signup">Sign Up page</a>.</h3>
                     <button type="submit" class="button">Continue</button>
                     
                 </form>
@@ -127,11 +128,12 @@
             <div class="block" v-if="page.level1 === 'trails' && page.level2 !== '' && selectedTrail">
                 <h2>{{selectedTrail.title}}</h2>
                 <p>{{selectedTrail.description}}</p>
-                <p class="start-location">Start Location:</p>
-                <google-map v-bind:latitude="selectedTrail.zones[0].latitude" v-bind:longitude="selectedTrail.zones[0].longitude"></google-map>
-                <a class="button" v-bind:href="(user ? 'play/' : 'preplay/') + page.level2" v-on:click="changePage($event, user ? 'play' : 'preplay', page.level2)">
-                    <i class="fa fa-location-arrow" aria-hidden="true"></i> Start
-                </a>
+                <template v-if="selectedTrail.zones && selectedTrail.zones.length">
+                    <p class="start-location">Start Location:</p>
+                    <google-map v-bind:latitude="selectedTrail.zones[0].latitude" v-bind:longitude="selectedTrail.zones[0].longitude"></google-map>
+                    <a class="button" v-bind:href="(user ? 'play/' : 'preplay/') + page.level2" v-on:click="changePage($event, user ? 'play' : 'preplay', page.level2)"><i class="fa fa-location-arrow" aria-hidden="true"></i> Start</a>
+                </template>
+                <p v-else>This trail is not yet ready for playing.</p>
                 <a v-if="user && user.uid === selectedTrail.owner" class="button" v-bind:href="'edittrail/' + page.level2" v-on:click="changePage($event, 'edittrail', page.level2)">
                     <i class="fa fa-pencil" aria-hidden="true"></i> Edit
                 </a>
@@ -152,7 +154,7 @@
                 <label for="description">Description:</label>
                 <input type="text" id="description" v-model.lazy="selectedTrail.description" v-on:change="updateTrail(selectedTrail)"/>
                 <h3>Zones</h3>
-                <ol>
+                <ol v-if="selectedTrail.zones">
                     <li v-for="zone, zoneIndex in selectedTrail.zones" class="zone">
                         <h4>Zone {{zoneIndex + 1}}</h4>
                         <button class="button remove-zone" v-on:click="removeZone(zoneIndex)"><i class="fa fa-trash" aria-hidden="true"></i> Remove Zone</button>
@@ -168,6 +170,8 @@
                     </li>
                 </ol>
                 <button class="button" v-on:click="addZone(selectedTrail)"><i class="fa fa-plus" aria-hidden="true"></i> Add Zone</button>
+                <h3>Admin</h3>
+                <button class="button" v-on:click="removeTrail"><i class="fa fa-trash" aria-hidden="true"></i> Delete Trail</button>
             </div>
             
             <div class="block" v-if="page.level1 === 'play' && selectedTrail">

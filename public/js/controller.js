@@ -104,6 +104,16 @@ var vm,
                     this.signup.error = true;
                 }
             },
+            newTrail: function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                dbTrails.add({
+                    title: "New Trail",
+                    owner: this.user.uid
+                }).then(function (docRef) {
+                    changePage("edittrail", docRef.id, true);
+                });
+            },
             updateTrail: function (trail) {
                 dbTrails.doc(this.page.level2).update(trail);
             },
@@ -118,8 +128,13 @@ var vm,
             },
             addZone: function (trail) {
                 
-                // use previous zone location as a starting point
                 var previousZone = {};
+                
+                if (!trail.zones) {
+                    trail.zones = [];
+                }
+                
+                // use previous zone location as a starting point
                 if (trail.zones.length) {
                     previousZone = trail.zones[trail.zones.length - 1];
                 }
@@ -132,6 +147,13 @@ var vm,
                 dbTrails.doc(this.page.level2).update({
                     zones: trail.zones
                 });
+            },
+            removeTrail: function () {
+                if (window.prompt("Are you sure you wish to completely delete this trail? Enter 'yes' into the box below to confirm:") === "yes") {
+                    dbTrails.doc(this.page.level2).delete().then(function () {
+                        changePage("welcome", null, true);
+                    });
+                }
             },
             positionUpdate: function (lat, lng, zoneIndex) {
                 var zones = this.selectedTrail.zones;
