@@ -77,6 +77,13 @@ var vm,
                     });
                 }
                 return userData;
+            },
+            leaderboard: function () {
+                return this.users.sort(function (a, b) {
+                    var aTotal = a.data().completedTrails ? a.data().completedTrails.length || 0 : 0,
+                        bTotal = b.data().completedTrails ? b.data().completedTrails.length || 0 : 0;
+                    return bTotal - aTotal;
+                });
             }
         },
         methods: {

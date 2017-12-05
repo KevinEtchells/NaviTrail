@@ -68,6 +68,7 @@
                 <a v-if="!user" class="button" href="signin" v-on:click="changePage($event, 'signin')">Log-in</a>
                 <a class="button" href="trails" v-on:click="changePage($event, 'trails')">View Trails</a>
                 <a v-if="user" class="button" href="edit" v-on:click="newTrail($event)">Create a New Trail</a>
+                <a class="button" href="leaderboard" v-on:click="changePage($event, 'leaderboard')">Leaderboard</a>
                 <a v-if="user" class="button" href="user" v-on:click="changePage($event, 'user')">User Details</a>
             </div>
 
@@ -113,6 +114,22 @@
                 </form>
             </div>
 
+            <div class="block" v-if="page.level1 === 'leaderboard'">
+                <h2>Leaderboard</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th>Points</th>
+                        </tr>
+                    </thead>
+                    <tr v-for="user in leaderboard">
+                        <td>{{user.data().username}}</td>
+                        <td>{{user.data().completedTrails.length}}</td>
+                    </tr>
+                </table>
+            </div>
+            
             <div class="block" v-if="page.level1 === 'trails' && page.level2 === ''">
                 <h2>Select a trail:</h2>
                 <ul>
